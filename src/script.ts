@@ -3,6 +3,8 @@ import * as Cheerio from 'cheerio';
 import Decimal from 'decimal.js';
 import fetch from 'node-fetch';
 
+process.env.TZ = 'Asia/Shanghai';
+
 const MONITORING_CURRENCY_MAP = new Map(
   ['美元', '欧元', '英镑', '日元'].map((currency, index) => [currency, index]),
 );
