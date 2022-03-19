@@ -77,6 +77,8 @@ export default script<undefined, Storage>(async function* (
   ) {
     storage.setItem('dailySent', todayDateString);
 
+    let previousRates = {...rates};
+
     for (let {currency, ref} of entries) {
       rates[currency] = ref;
     }
@@ -90,7 +92,10 @@ export default script<undefined, Storage>(async function* (
 ${entries
   .map(
     ({currency, buying, selling, ref}) =>
-      `${currency}：${ref}（买 ${buying}，卖 ${selling}）`,
+      `${currency}：${ref}（波动 ${getChangeRatePercentage(
+        ref,
+        previousRates[currency],
+      )}，买 ${buying}，卖 ${selling}）`,
   )
   .join('\n')}`,
     };
@@ -119,7 +124,7 @@ ${
   changeRate > 0 ? '📈' : '📉'
 }${currency}当前汇率 ${ref}（买 ${buying}，卖 ${selling}），较上次推送 ${
         changeRate > 0 ? '+' : '-'
-      }${(changeRate * 100).toFixed(1)}%。`,
+      }${(changeRate * 100).toFixed(2)}%。`,
       tags: [currency],
     };
   }
@@ -127,4 +132,17 @@ ${
 
 function parseRate(rate: string): number {
   return rate ? new Decimal(rate).div(100).toNumber() : NaN;
+}
+
+function getChangeRatePercentage(
+  current: number,
+  previous: number | undefined,
+): string {
+  if (typeof previous !== 'number') {
+    return 'N/A';
+  }
+
+  let changeRate = (current - previous) / previous;
+
+  return `${changeRate >= 0 ? '+' : '-'}${(changeRate * 100).toFixed(2)}%`;
 }
