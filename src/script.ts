@@ -13,14 +13,15 @@ const DAILY_OFFSET = 9 * 3600 * 1000 - 2 * 60 * 1000; // 9:00 向前宽限 2 分
 
 const CHANGE_RATE_THRESHOLD = 0.005;
 
-interface Payload {}
-
 interface Storage {
   dailySent: string;
   rates: Record<string, number | undefined>;
 }
 
-export default script<Payload, Storage>(async function* (_payload, {storage}) {
+export default script<undefined, Storage>(async function* (
+  _payload,
+  {storage},
+) {
   let html = await fetch('https://www.boc.cn/sourcedb/whpj/index.html').then(
     response => response.text(),
   );
