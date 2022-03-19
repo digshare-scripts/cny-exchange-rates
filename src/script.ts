@@ -6,7 +6,9 @@ import fetch from 'node-fetch';
 process.env.TZ = 'Asia/Shanghai';
 
 const MONITORING_CURRENCY_MAP = new Map(
-  ['美元', '欧元', '英镑', '日元'].map((currency, index) => [currency, index]),
+  ['美元', '欧元', '英镑', '日元', '卢布', '土耳其里拉'].map(
+    (currency, index) => [currency, index],
+  ),
 );
 
 const DAILY_OFFSET = 9 * 3600 * 1000 - 2 * 60 * 1000; // 9:00 向前宽限 2 分钟
