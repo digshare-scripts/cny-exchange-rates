@@ -125,7 +125,7 @@ ${entries
 ${
   changeRate > 0 ? '📈' : '📉'
 }${currency}当前汇率 ${ref}（买 ${buying}，卖 ${selling}），较上次推送 ${
-        changeRate > 0 ? '+' : '-'
+        changeRate > 0 ? '+' : ''
       }${(changeRate * 100).toFixed(2)}%。`,
       tags: [currency],
     };
@@ -146,5 +146,5 @@ function getChangeRatePercentage(
 
   let changeRate = (current - previous) / previous;
 
-  return `${changeRate >= 0 ? '+' : '-'}${(changeRate * 100).toFixed(2)}%`;
+  return `${changeRate >= 0 ? '+' : ''}${(changeRate * 100).toFixed(2)}%`;
 }
