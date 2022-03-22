@@ -17,7 +17,7 @@ const CHANGE_RATE_THRESHOLD = 0.005;
 
 interface Storage {
   dailySent: string;
-  rates: Record<string, number | undefined>;
+  rates: Record<string, number | [number, number] | undefined>;
 }
 
 export default script<undefined, Storage>(async function* (
@@ -92,22 +92,36 @@ export default script<undefined, Storage>(async function* (
 每日汇率简报：
 
 ${entries
-  .map(
-    ({currency, buying, selling, rate}) =>
-      `${currency}：买 ${buying}，卖 ${selling}，波动 ${getChangeRatePercentage(
-        rate,
-        previousRates[currency],
-      )}`,
-  )
+  .map(({currency, buying, selling, rate}) => {
+    let previousRate = previousRates[currency];
+
+    if (Array.isArray(previousRate)) {
+      // 取简报的汇率
+      previousRate = previousRate[0];
+    }
+
+    return `${currency}：买 ${buying}，卖 ${selling}，波动 ${getChangeRatePercentage(
+      rate,
+      previousRate,
+    )}`;
+  })
   .join('\n')}`,
     };
   }
 
   for (let {currency, buying, selling, rate} of entries) {
     let previousRate = rates[currency];
+    let previousDailyRate: number | undefined;
 
-    if (typeof previousRate !== 'number') {
-      continue;
+    if (Array.isArray(previousRate)) {
+      // 优先取简报后变过的汇率
+      [previousDailyRate, previousRate] = previousRate;
+    } else {
+      if (typeof previousRate !== 'number') {
+        continue;
+      }
+
+      previousDailyRate = previousRate;
     }
 
     let changeRate = (rate - previousRate) / previousRate;
@@ -116,7 +130,7 @@ ${entries
       continue;
     }
 
-    rates[currency] = rate;
+    rates[currency] = [previousDailyRate, rate];
 
     storage.setItem('rates', rates);
 
