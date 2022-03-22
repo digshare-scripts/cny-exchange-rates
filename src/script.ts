@@ -46,13 +46,13 @@ export default script<undefined, Storage>(async function* (
       let selling = parseRate(
         $(tds[3]).text().trim() || $(tds[4]).text().trim(),
       );
-      let ref = parseRate($(tds[4]).text().trim());
+      let rate = (buying + selling) / 2;
 
       return {
         currency,
         buying,
         selling,
-        ref,
+        rate,
       };
     })
     .filter(entry => MONITORING_CURRENCY_MAP.has(entry.currency))
@@ -81,8 +81,8 @@ export default script<undefined, Storage>(async function* (
 
     let previousRates = {...rates};
 
-    for (let {currency, ref} of entries) {
-      rates[currency] = ref;
+    for (let {currency, rate} of entries) {
+      rates[currency] = rate;
     }
 
     storage.setItem('rates', rates);
@@ -93,38 +93,37 @@ export default script<undefined, Storage>(async function* (
 
 ${entries
   .map(
-    ({currency, buying, selling, ref}) =>
-      `${currency}：${ref}（波动 ${getChangeRatePercentage(
-        ref,
+    ({currency, buying, selling, rate}) =>
+      `${currency}：买 ${buying}，卖 ${selling}，波动 ${getChangeRatePercentage(
+        rate,
         previousRates[currency],
-      )}，买 ${buying}，卖 ${selling}）`,
+      )}`,
   )
   .join('\n')}`,
     };
   }
 
-  for (let {currency, buying, selling, ref} of entries) {
+  for (let {currency, buying, selling, rate} of entries) {
     let previousRate = rates[currency];
 
     if (typeof previousRate !== 'number') {
       continue;
     }
 
-    let changeRate = (ref - previousRate) / previousRate;
+    let changeRate = (rate - previousRate) / previousRate;
 
     if (Math.abs(changeRate) < CHANGE_RATE_THRESHOLD) {
       continue;
     }
 
-    rates[currency] = ref;
+    rates[currency] = rate;
 
     storage.setItem('rates', rates);
 
     yield {
-      content: `\
-${
-  changeRate > 0 ? '📈' : '📉'
-}${currency}当前汇率 ${ref}（买 ${buying}，卖 ${selling}），较上次推送 ${
+      content: `${
+        changeRate > 0 ? '📈' : '📉'
+      }${currency}当前买 ${buying}，卖 ${selling}，较上次推送 ${
         changeRate > 0 ? '+' : ''
       }${(changeRate * 100).toFixed(2)}%。`,
       tags: [currency],
