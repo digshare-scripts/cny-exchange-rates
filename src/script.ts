@@ -135,11 +135,14 @@ ${entries
     storage.setItem('rates', rates);
 
     yield {
-      content: `${
-        changeRate > 0 ? '📈' : '📉'
-      }${currency}当前买 ${buying}，卖 ${selling}，较上次推送 ${
+      content: `\
+${
+  changeRate > 0 ? '📈' : '📉'
+}${currency}当前买 ${buying}，卖 ${selling}，较上次推送 ${
         changeRate > 0 ? '+' : ''
-      }${(changeRate * 100).toFixed(2)}%。`,
+      }${(changeRate * 100).toFixed(2)}%。
+
+如果不想收到特定币种的波动速报，可以在订阅设置中取消“接受全部消息”后按需选择。`,
       tags: [currency],
     };
   }
