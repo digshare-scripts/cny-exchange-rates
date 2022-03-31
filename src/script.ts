@@ -5,15 +5,26 @@ import fetch from 'node-fetch';
 
 process.env.TZ = 'Asia/Shanghai';
 
+const MONITORING_CURRENCIES = [
+  '美元',
+  '欧元',
+  '英镑',
+  '日元',
+  '卢布',
+  '土耳其里拉',
+  '澳大利亚元',
+];
+
 const MONITORING_CURRENCY_MAP = new Map(
-  ['美元', '欧元', '英镑', '日元', '卢布', '土耳其里拉', '澳大利亚元'].map(
-    (currency, index) => [currency, index],
-  ),
+  MONITORING_CURRENCIES.map((currency, index) => [currency, index]),
 );
 
 const DAILY_OFFSET = 9 * 3600 * 1000 - 2 * 60 * 1000; // 9:00 向前宽限 2 分钟
 
-const CHANGE_RATE_THRESHOLD = 0.005;
+const CHANGE_RATE_THRESHOLD_MAP = new Map([
+  ...MONITORING_CURRENCIES.map(currency => [currency, 0.01] as const),
+  ['卢布', 0.05],
+]);
 
 interface Storage {
   dailySent: string;
@@ -126,7 +137,7 @@ ${entries
 
     let changeRate = (rate - previousRate) / previousRate;
 
-    if (Math.abs(changeRate) < CHANGE_RATE_THRESHOLD) {
+    if (Math.abs(changeRate) < CHANGE_RATE_THRESHOLD_MAP.get(currency)!) {
       continue;
     }
 
