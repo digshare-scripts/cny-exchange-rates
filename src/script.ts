@@ -9,6 +9,7 @@ const MONITORING_CURRENCIES = [
   '美元',
   '欧元',
   '英镑',
+  '港币',
   '日元',
   '卢布',
   '土耳其里拉',
