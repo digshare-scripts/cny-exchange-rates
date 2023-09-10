@@ -4,13 +4,15 @@
   "type": "module",
   "exports": "./src/script.ts",
   "dss": {
-    "schedule": "rate(1d)"
+    "schedule": "rate(1h)"
   },
   "dependencies": {
-    "@digshare/script": "0.4"
+    "@digshare/script": "^0.4.10",
+    "cheerio": "1.0.0-rc.12",
+    "decimal.js": "^10.4.3"
   },
   "devDependencies": {
     "@types/node": "18",
-    "typescript": "latest"
+    "typescript": "^5.2.2"
   }
 }
