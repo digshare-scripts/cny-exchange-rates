@@ -2,6 +2,8 @@ import {script} from '@digshare/script';
 
 import {getRates} from './@boc';
 
+process.env.TZ = 'Asia/Shanghai';
+
 const MONITORING_CURRENCIES = [
   '美元',
   '欧元',
@@ -32,15 +34,6 @@ interface State {
 export default script<State>(async function* (
   {dailySent, rates} = {dailySent: null, rates: {}},
 ) {
-  // migration
-  for (const [currency, rate] of Object.entries(rates) as [string, any][]) {
-    if (typeof rate === 'number') {
-      rates[currency] = [[], rate, rate];
-    } else if (Array.isArray(rate) && rate.length === 2) {
-      rates[currency] = [[], rate[0], rate[0]];
-    }
-  }
-
   let updated = false;
 
   const nowDate = new Date();
@@ -133,18 +126,22 @@ ${MONITORING_CURRENCIES.map(currency => {
     const [rateRecords, , reportedRate] = record;
 
     if (typeof reportedRate !== 'number') {
+      console.info(currency, '无上次推送记录');
       continue;
     }
 
     if (rateRecords.length < 2) {
+      console.info(currency, `仅 ${rateRecords.length} 条记录`);
       continue;
     }
 
     if (rateRecords[0][1] > oneDayAgo) {
+      console.info(currency, '第一条记录太近');
       continue;
     }
 
     if (rateRecords[rateRecords.length - 1][1] < now) {
+      console.info(currency, '最后一条记录不是最新的');
       continue;
     }
 
@@ -158,6 +155,13 @@ ${MONITORING_CURRENCIES.map(currency => {
 
     const rateChange =
       Math.abs(latestRate - reportedRate) / Math.min(latestRate, reportedRate);
+
+    console.info(
+      currency,
+      rateChange,
+      previousMaxRateChange,
+      previousMaxRateChange * THRESHOLD_FACTOR,
+    );
 
     if (rateChange < previousMaxRateChange * THRESHOLD_FACTOR) {
       continue;
